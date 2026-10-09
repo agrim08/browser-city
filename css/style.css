@@ -77,6 +77,25 @@ button { font: inherit; color: inherit; }
 }
 .btn-primary:hover { box-shadow: 0 5px 0 #ec9cb7, var(--shadow-sm); }
 .btn-primary:active { box-shadow: 0 1px 0 #ec9cb7, var(--shadow-sm); }
+/* ---------- Build my city — hop animation ---------- */
+@keyframes btn-hop {
+  0%,  45%, 100% { transform: translateY(0)   scaleX(1)    scaleY(1); }
+  10%, 35%        { transform: translateY(-3px) scaleX(.97)  scaleY(1.03); }
+  20%             { transform: translateY(-5px) scaleX(.96)  scaleY(1.04); }
+  50%             { transform: translateY(1px) scaleX(1.03) scaleY(.97); }
+  55%             { transform: translateY(0)   scaleX(1)    scaleY(1); }
+}
+
+#btnBuild {
+  animation: btn-hop 2.4s cubic-bezier(.36,.07,.19,.97) infinite;
+  transform-origin: center bottom;
+}
+#btnBuild:hover,
+#btnBuild:active,
+#btnBuild:focus-visible {
+  animation-play-state: paused;
+}
+
 .btn-small { padding: 6px 12px; font-size: 14px; }
 .btn-ghost { background: transparent; box-shadow: none; border-color: transparent; color: var(--ink-2); }
 .btn-ghost:hover { box-shadow: none; background: rgba(255,255,255,.6); }
