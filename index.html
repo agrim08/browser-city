@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Browser City</title>
+  <meta name="description" content="Turn your browsing history into a tiny living city: every site a building, your favourites landmarks, your interests neighbourhoods.">
+  <meta name="theme-color" content="#cfe6fb">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 6 58 19 32 32 6 19z' fill='%23ffd8e5'/%3E%3Cpath d='M6 19v26l26 13V32z' fill='%23ffc8d9'/%3E%3Cpath d='M58 19v26L32 58V32z' fill='%23f2a9c0'/%3E%3Cpath d='M24 28V10l8-4 8 4v18l-8 4z' fill='%23bfe8d6'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Fredoka:wght@400;500;600;700&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="city" aria-label="An isometric miniature city built from browsing history. Drag to explore, scroll to zoom, click a building to hear its story."></canvas>
+
+  <header class="hud-top">
+    <button class="town-sign" id="townSign" title="About this town">
+      <span class="sign-kicker">Welcome to</span>
+      <span class="sign-title">Browser City</span>
+      <span class="sign-sub" id="signSub">laying the first stones…</span>
+    </button>
+
+    <div class="search" id="searchBox">
+      <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="search" type="search" placeholder="Find a building…" autocomplete="off" spellcheck="false" aria-label="Find a building">
+      <kbd>/</kbd>
+      <ul id="searchList" class="search-list" role="listbox"></ul>
+    </div>
+
+    <nav class="actions" aria-label="City actions">
+      <button class="btn" id="btnTour" title="Take the bus tour">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="12" rx="3"/><path d="M3 11h18M7 17v2M17 17v2"/></svg><span>Tour</span>
+      </button>
+      <button class="btn" id="btnReplay" title="Watch your city grow, day by day">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l3 2"/></svg><span>Replay</span>
+      </button>
+      <button class="btn" id="btnDay" title="Replay a single day, visit by visit">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="3"/><path d="M8 3v4M16 3v4M4 10h16"/><circle cx="12" cy="15" r="1.6"/></svg><span>A day</span>
+      </button>
+      <button class="btn" id="btnPostcard" title="Save a postcard of this view">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M14 9h4v4h-4zM6 10h5M6 14h5"/></svg><span>Postcard</span>
+      </button>
+      <button class="btn btn-primary" id="btnBuild" title="Build a city from your own history">
+        <svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10l8-6 8 6v10"/><path d="M10 20v-5h4v5"/></svg><span>Build my city</span>
+      </button>
+    </nav>
+  </header>
+
+  <div class="hud-bottom">
+    <div class="districts" id="districtChips" aria-label="Neighbourhoods"></div>
+
+    <div class="clock" id="clock">
+      <button class="clock-play" id="clockPlay" aria-label="Pause time">
+        <svg class="ico ico-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6v12M15 6v12"/></svg>
+        <svg class="ico ico-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l10-6.5z"/></svg>
+      </button>
+      <div class="clock-track">
+        <svg class="clock-spark" id="clockSpark" viewBox="0 0 240 40" preserveAspectRatio="none" aria-hidden="true"></svg>
+        <input type="range" id="clockRange" min="0" max="24" step="0.05" value="16.5" aria-label="Time of day">
+      </div>
+      <div class="clock-read">
+        <span id="clockTime">4:30 pm</span>
+        <span id="clockMood">golden hour</span>
+      </div>
+    </div>
+
+    <div class="zoom" aria-label="Zoom and sound">
+      <button id="helpBtn" aria-label="Quick guide" title="Quick guide (?)">
+        <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.3a2.5 2.5 0 1 1 3.4 2.4c-.6.3-1 .8-1 1.5v.6"/><circle cx="12" cy="17" r=".6" fill="currentColor"/></svg>
+      </button>
+      <button id="soundBtn" aria-label="Turn sound on" aria-pressed="false" title="Ambient sound">
+        <svg class="ico ico-snd-off" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="m17 9 4 6M21 9l-4 6"/></svg>
+        <svg class="ico ico-snd-on" viewBox="0 0 24 24"><path d="M4 10v4h4l5 4V6L8 10z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+      </button>
+      <button id="zoomIn" aria-label="Zoom in"><svg class="ico" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12"/></svg></button>
+      <button id="zoomOut" aria-label="Zoom out"><svg class="ico" viewBox="0 0 24 24"><path d="M6 12h12"/></svg></button>
+      <button id="zoomHome" aria-label="See the whole town"><svg class="ico" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+    </div>
+  </div>
+
+  <aside class="card" id="card" aria-hidden="true" aria-live="polite">
+    <button class="card-close" id="cardClose" aria-label="Close">
+      <svg class="ico" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg>
+    </button>
+    <div class="card-scroll" id="cardBody"></div>
+  </aside>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <div class="replay-bar" id="replayBar" hidden>
+    <div class="rb-date" id="rbDate"></div>
+    <div class="rb-track"><div class="rb-fill" id="rbFill"></div></div>
+    <div class="rb-stats" id="rbStats"></div>
+    <button class="btn btn-small" id="rbStop">Skip to today</button>
+  </div>
+
+  <div class="tour-cap" id="tourCap" hidden>
+    <div class="tc-step" id="tcStep"></div>
+    <div class="tc-title" id="tcTitle"></div>
+    <div class="tc-text" id="tcText"></div>
+    <div class="tc-actions">
+      <button class="btn btn-small" id="tcPrev" aria-label="Previous stop">‹</button>
+      <button class="btn btn-small btn-primary" id="tcNext">Next stop ›</button>
+      <button class="btn btn-small btn-ghost" id="tcEnd">Hop off</button>
+    </div>
+  </div>
+
+  <div class="tour-cap" id="rideCap" hidden>
+    <div class="tc-step" id="rcStep">Riding along</div>
+    <div class="tc-title" id="rcTitle"></div>
+    <div class="tc-text" id="rcText"></div>
+    <div class="tc-actions" id="rcActions"></div>
+  </div>
+
+  <div class="replay-bar day-bar" id="dayBar" hidden>
+    <div class="rb-date" id="dbDate"></div>
+    <div class="db-btns"><button class="btn btn-small" id="dbSpeed" title="Speed">×1</button><button class="btn btn-small" id="dbStop">End day</button></div>
+    <div class="rb-track"><div class="rb-fill" id="dbFill"></div></div>
+    <div class="rb-stats" id="dbStats"></div>
+  </div>
+
+  <div class="modal" id="modal" hidden>
+    <div class="modal-card" id="modalCard" role="dialog" aria-modal="true"></div>
+  </div>
+
+  <input type="file" id="fileInput" hidden>
+
+  <script src="js/util.js"></script>
+  <script src="js/sound.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/importers.js"></script>
+  <script src="js/city.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/sim.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
